@@ -6,4 +6,5 @@ catboost
 flask
 scikit-learn
 dill
+gunicorn
 # -e .
