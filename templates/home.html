@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Predictor - JARVIS Protocol</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        :root {
+            --primary-glow: #00d4ff;
+            --secondary-glow: #ff3366;
+            --bg-dark: #02040a;
+            --container-start: rgba(10, 15, 30, 0.85);
+            --container-end: rgba(5, 8, 20, 0.95);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px; 
+            background-position: 0 0, 40px 60px, 130px 270px;
+            animation: moveStars 120s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes moveStars {
+            from { background-position: 0 0, 40px 60px, 130px 270px; }
+            to { background-position: -10000px 5000px, -10000px 5000px, -10000px 5000px; }
+        }
+
+        .container {
+            background: linear-gradient(145deg, var(--container-start), var(--container-end));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 30px;
+            padding: 50px;
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+            box-shadow: 0 0 80px rgba(0, 150, 255, 0.35),
+                        inset 0 0 20px rgba(0, 180, 255, 0.1);
+            border: 1px solid var(--secondary-glow);
+            position: relative;
+            z-index: 1;
+            animation: containerLoad 1s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        @keyframes containerLoad {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(var(--primary-glow) 1px, transparent 1px),
+                linear-gradient(to right, var(--primary-glow) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.05;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            border-radius: 30px;
+        }
+
+        @keyframes gridMove {
+            from { background-position: 0 0; }
+            to { background-position: -80px 80px; }
+        }
+
+        .corner-bracket {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-style: solid;
+            border-color: var(--secondary-glow);
+            opacity: 0;
+            animation: cornerLoad 1.5s ease-out 0.5s forwards;
+            z-index: 2;
+        }
+        .corner-bracket.top-left { top: 15px; left: 15px; border-width: 2px 0 0 2px; }
+        .corner-bracket.top-right { top: 15px; right: 15px; border-width: 2px 2px 0 0; }
+        .corner-bracket.bottom-left { bottom: 15px; left: 15px; border-width: 0 0 2px 2px; }
+        .corner-bracket.bottom-right { bottom: 15px; right: 15px; border-width: 0 2px 2px 0; }
+
+        @keyframes cornerLoad {
+            from { width: 0; height: 0; opacity: 0; }
+            to { width: 30px; height: 30px; opacity: 0.7; }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .arc-reactor {
+            width: 80px; height: 80px;
+            margin: 0 auto 20px;
+            position: relative;
+            animation: reactorSpin 4s linear infinite;
+        }
+
+        @keyframes reactorSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .arc-reactor::before, .arc-reactor::after {
+            content: ''; position: absolute; border-radius: 50%;
+        }
+
+        .arc-reactor::before {
+            width: 100%; height: 100%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, var(--secondary-glow) 30%, transparent 70%);
+            box-shadow: 0 0 40px var(--primary-glow),
+                        0 0 80px var(--secondary-glow),
+                        inset 0 0 40px var(--primary-glow);
+            animation: reactorPulse 2s ease-in-out infinite;
+        }
+
+        .arc-reactor::after {
+            width: 60%; height: 60%; top: 20%; left: 20%;
+            background: radial-gradient(circle, #fff 0%, var(--primary-glow) 50%, transparent 100%);
+            box-shadow: 0 0 30px #fff;
+        }
+
+        @keyframes reactorPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        h1 {
+            font-size: 2.5em; font-weight: 900;
+            text-align: center; margin-bottom: 10px;
+            background: linear-gradient(90deg, #fff, var(--primary-glow), var(--secondary-glow), var(--primary-glow));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textShine 3s linear infinite;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        @keyframes textShine {
+            to { background-position: -200% center; }
+        }
+
+        .subtitle {
+            text-align: center; color: var(--primary-glow);
+            font-size: 0.9em; letter-spacing: 2px;
+            margin-bottom: 30px; text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px; font-size: 0.8em;
+            color: var(--primary-glow); font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(0, 20, 40, 0.6);
+            color: #fff; font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        select:focus, input[type="number"]:focus {
+            border-color: var(--primary-glow);
+            background: rgba(0, 40, 60, 0.8);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4),
+                        inset 0 0 10px rgba(0, 212, 255, 0.1);
+        }
+
+        select option {
+            background: #0a0f1e;
+            color: #fff;
+        }
+
+        input::placeholder {
+            color: rgba(0, 212, 255, 0.4);
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(145deg, var(--secondary-glow), #cc0033);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2em; font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase; letter-spacing: 2px;
+            margin-top: 20px; position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 51, 102, 0.4),
+                        0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        button::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 20px; height: 200%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(45deg);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        button:hover::after {
+            left: 150%;
+            opacity: 1;
+            transition: all 0.8s ease-in-out;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 50px rgba(255, 51, 102, 0.6),
+                        0 15px 40px rgba(0, 0, 0, 0.6);
+            background: linear-gradient(145deg, #ff3366, var(--primary-glow));
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .prediction-result {
+            margin-top: 40px; padding: 30px;
+            background: linear-gradient(145deg, rgba(255, 51, 102, 0.15), rgba(0, 212, 255, 0.15));
+            border-radius: 15px; text-align: center;
+            border: 1px solid var(--secondary-glow);
+            box-shadow: 0 0 30px rgba(255, 51, 102, 0.3),
+                        inset 0 0 20px rgba(255, 51, 102, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: resultAppear 0.8s ease-out forwards;
+        }
+
+        @keyframes resultAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .prediction-result::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+            animation: resultScan 1.2s ease-out forwards;
+        }
+
+        @keyframes resultScan {
+            from { top: 0; opacity: 1; }
+            to { top: 100%; opacity: 0; }
+        }
+
+        .result-label {
+            color: var(--primary-glow);
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .result-value {
+            color: #ffffff;
+            font-size: 3.5em;
+            font-weight: 900;
+            text-shadow: 
+                0 0 20px var(--secondary-glow),
+                0 0 40px var(--primary-glow);
+            letter-spacing: -2px;
+            animation: textFadeIn 0.8s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+
+        .result-suffix {
+            font-size: 0.5em;
+            opacity: 0.8;
+        }
+
+        @keyframes textFadeIn {
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 40px 25px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .arc-reactor {
+                width: 60px; height: 60px;
+            }
+            .score-grid {
+                grid-template-columns: 1fr;
+            }
+            .result-value {
+                font-size: 2.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="corner-bracket top-left"></div>
+        <div class="corner-bracket top-right"></div>
+        <div class="corner-bracket bottom-left"></div>
+        <div class="corner-bracket bottom-right"></div>
+
+        <div class="header">
+            <div class="arc-reactor"></div>
+            <h1>JARVIS Protocol</h1>
+            <p class="subtitle">Student Analytics Intelligence</p>
+        </div>
+
+        <form action="/predict" method="POST">
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender" required>
+                    <option value="" disabled selected>Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="race_enthinicity">Race/Ethnicity</label>
+                <select id="race_enthinicity" name="race_enthinicity" required>
+                    <option value="" disabled selected>Select race/ethnicity</option>
+                    <option value="group A">Group A</option>
+                    <option value="group B">Group B</option>
+                    <option value="group C">Group C</option>
+                    <option value="group D">Group D</option>
+                    <option value="group E">Group E</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="parental_level_of_education">Parental Education Level</label>
+                <select id="parental_level_of_education" name="parental_level_of_education" required>
+                    <option value="" disabled selected>Select education level</option>
+                    <option value="some high school">Some High School</option>
+                    <option value="high school">High School</option>
+                    <option value="some college">Some College</option>
+                    <option value="associate's degree">Associate's Degree</option>
+                    <option value="bachelor's degree">Bachelor's Degree</option>
+                    <option value="master's degree">Master's Degree</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="lunch">Lunch Program</label>
+                <select id="lunch" name="lunch" required>
+                    <option value="" disabled selected>Select lunch type</option>
+                    <option value="standard">Standard</option>
+                    <option value="free/reduced">Free/Reduced</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="test_preparation_course">Test Preparation Course</label>
+                <select id="test_preparation_course" name="test_preparation_course" required>
+                    <option value="" disabled selected>Select option</option>
+                    <option value="none">None</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+
+            <div class="score-grid">
+                <div class="form-group">
+                    <label for="reading_score">Reading Score</label>
+                    <input type="number" id="reading_score" name="reading_score" 
+                           min="0" max="100" step="1" required 
+                           placeholder="0-100">
+                </div>
+
+                <div class="form-group">
+                    <label for="writing_score">Writing Score</label>
+                    <input type="number" id="writing_score" name="writing_score" 
+                           min="0" max="100" step="1" required 
+                           placeholder="0-100">
+                </div>
+            </div>
+
+            <button type="submit">Initialize Prediction</button>
+        </form>
+
+        {% if results %}
+        <div class="prediction-result">
+            <div class="result-label">Predicted Math Score</div>
+            <div class="result-value">{{ results }}<span class="result-suffix">/100</span></div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
